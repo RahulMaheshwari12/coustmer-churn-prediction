@@ -1,14 +1,10 @@
 import os
-import uuid
 import joblib
 import pandas as pd
 import numpy as np
-from flask import Flask, request, jsonify, render_template, send_from_directory
-from werkzeug.utils import secure_filename
+from flask import Flask, request, jsonify, render_template
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
-app.config['UPLOAD_FOLDER'] = os.path.join(os.getcwd(), 'uploads')
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 # Load preprocessors and model
 try:
@@ -93,71 +89,6 @@ def predict_single():
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
-@app.route('/predict_batch', methods=['POST'])
-def predict_batch():
-    if not model:
-        return jsonify({'error': 'Model not loaded on server'}), 500
-        
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file uploaded'}), 400
-        
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({'error': 'Empty filename'}), 400
-        
-    if not file.filename.endswith('.csv'):
-        return jsonify({'error': 'Only CSV files are supported'}), 400
-        
-    try:
-        # Save file
-        filename = secure_filename(f"{uuid.uuid4()}_{file.filename}")
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(filepath)
-        
-        # Load data
-        raw_df = pd.read_csv(filepath)
-        
-        # Save clean copy for preprocessing
-        clean_df = raw_df.drop(['id', 'gender'], axis=1, errors='ignore')
-        
-        # preprocess
-        processed_df = preprocess_data(clean_df)
-        
-        # predict
-        preds = model.predict(processed_df)
-        probs = model.predict_proba(processed_df)[:, 1]
-        
-        # Add predictions to original data
-        raw_df['Churn_Probability'] = np.round(probs, 4)
-        raw_df['Churn_Prediction'] = preds
-        raw_df['Churn_Prediction_Label'] = raw_df['Churn_Prediction'].map({1: 'Yes', 0: 'No'})
-        
-        # Save output file
-        out_filename = f"predictions_{filename}"
-        out_filepath = os.path.join(app.config['UPLOAD_FOLDER'], out_filename)
-        raw_df.to_csv(out_filepath, index=False)
-        
-        # Compute batch stats
-        total_customers = len(raw_df)
-        churn_count = int((preds == 1).sum())
-        retention_count = total_customers - churn_count
-        churn_rate = float(churn_count / total_customers) * 100
-        
-        return jsonify({
-            'total': total_customers,
-            'churned': churn_count,
-            'retained': retention_count,
-            'churn_rate': round(churn_rate, 2),
-            'download_url': f'/download/{out_filename}'
-        })
-        
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-@app.route('/download/<filename>')
-def download_file(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=True)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

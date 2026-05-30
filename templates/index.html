@@ -10,27 +10,21 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Custom Style Sheet -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
     <div class="app-container">
-        <!-- Sidebar Navigation -->
+        <!-- Sidebar Navigation (Branding and Status only) -->
         <aside class="sidebar">
             <div class="brand">
                 <i class="fa-solid fa-chart-line brand-icon"></i>
                 <h2>Churn<span>AI</span></h2>
             </div>
-            <nav class="nav-menu">
-                <button class="nav-btn active" id="btn-single">
-                    <i class="fa-solid fa-user-check"></i> Single Prediction
-                </button>
-                <button class="nav-btn" id="btn-batch">
-                    <i class="fa-solid fa-file-csv"></i> Batch Analytics
-                </button>
-            </nav>
+            <div class="sidebar-info">
+                <p class="sidebar-section-title">SERVICE OVERVIEW</p>
+                <p class="sidebar-desc">Real-time risk scoring engine leveraging machine learning to predict account-level subscription attrition.</p>
+            </div>
             <div class="sidebar-footer">
                 <p>Model Status: <span class="badge success">Active</span></p>
                 <p class="model-meta">LightGBM Ensemble</p>
@@ -50,7 +44,7 @@
             <!-- Dashboard Content Panels -->
             <div class="dashboard-body">
                 
-                <!-- Tab 1: Single Prediction Interface -->
+                <!-- Single Prediction Interface -->
                 <div class="tab-panel active" id="panel-single">
                     <div class="grid-container">
                         <!-- Inputs Form -->
@@ -239,76 +233,6 @@
                                     </ul>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tab 2: Batch Prediction Interface -->
-                <div class="tab-panel" id="panel-batch">
-                    <div class="batch-container">
-                        <!-- CSV Upload Card -->
-                        <div class="glass-card upload-card">
-                            <h3 class="card-title"><i class="fa-solid fa-upload"></i> Upload Customer File</h3>
-                            <p class="upload-desc">Upload a CSV file containing customer details to predict churn risks in batch. The columns must match the training set features.</p>
-                            
-                            <form id="batch-upload-form" enctype="multipart/form-data">
-                                <div class="drop-zone" id="csv-drop-zone">
-                                    <i class="fa-solid fa-file-csv upload-icon"></i>
-                                    <p class="drop-text">Drag & drop your CSV file here or <span>browse files</span></p>
-                                    <input type="file" id="batch-file" name="file" accept=".csv" class="file-input-hidden">
-                                </div>
-                                <div id="selected-file-info" class="selected-file-hidden">
-                                    <i class="fa-solid fa-file-excel file-label-icon"></i>
-                                    <span id="selected-filename">filename.csv</span>
-                                    <button type="button" id="remove-file-btn"><i class="fa-solid fa-xmark"></i></button>
-                                </div>
-                                <button type="submit" class="submit-btn" id="btn-batch-process">
-                                    Run Batch Analytics <i class="fa-solid fa-circle-play"></i>
-                                </button>
-                            </form>
-                        </div>
-
-                        <!-- Batch Results Display -->
-                        <div class="glass-card batch-results-card inactive" id="batch-results-panel">
-                            <h3 class="card-title"><i class="fa-solid fa-chart-pie"></i> Batch Prediction Results</h3>
-                            
-                            <div class="batch-grid">
-                                <!-- Chart -->
-                                <div class="chart-box">
-                                    <canvas id="churnChart"></canvas>
-                                </div>
-
-                                <!-- Stats Dashboard -->
-                                <div class="stats-box">
-                                    <div class="stat-card">
-                                        <div class="stat-value" id="stat-total">0</div>
-                                        <div class="stat-label">Total Accounts Processed</div>
-                                    </div>
-                                    <div class="stat-row">
-                                        <div class="stat-card nested">
-                                            <div class="stat-value danger" id="stat-churned">0</div>
-                                            <div class="stat-label">Predicted to Churn</div>
-                                        </div>
-                                        <div class="stat-card nested">
-                                            <div class="stat-value success" id="stat-retained">0</div>
-                                            <div class="stat-label">Accounts Retained</div>
-                                        </div>
-                                    </div>
-                                    <div class="stat-card churn-rate-card">
-                                        <div class="stat-value" id="stat-rate">0.0%</div>
-                                        <div class="stat-label">Estimated Churn Rate</div>
-                                    </div>
-                                    <a id="download-predictions-link" href="#" class="download-btn">
-                                        <i class="fa-solid fa-circle-arrow-down"></i> Download Predictions CSV
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Processing overlay -->
-                        <div class="loader-overlay hidden" id="processing-loader">
-                            <div class="loader-spinner"></div>
-                            <p>AI Engine Processing Batch Prediction...</p>
                         </div>
                     </div>
                 </div>
