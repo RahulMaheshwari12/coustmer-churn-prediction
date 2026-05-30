@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Customer Churn Predictor Dashboard</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom Style Sheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand">
+                <i class="fa-solid fa-chart-line brand-icon"></i>
+                <h2>Churn<span>AI</span></h2>
+            </div>
+            <nav class="nav-menu">
+                <button class="nav-btn active" id="btn-single">
+                    <i class="fa-solid fa-user-check"></i> Single Prediction
+                </button>
+                <button class="nav-btn" id="btn-batch">
+                    <i class="fa-solid fa-file-csv"></i> Batch Analytics
+                </button>
+            </nav>
+            <div class="sidebar-footer">
+                <p>Model Status: <span class="badge success">Active</span></p>
+                <p class="model-meta">LightGBM Ensemble</p>
+            </div>
+        </aside>
+
+        <!-- Main Dashboard Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="app-header">
+                <div class="header-title">
+                    <h1 id="page-title">Predictive Retention Insights</h1>
+                    <p id="page-subtitle">Analyze churn risk profile for individual customer accounts</p>
+                </div>
+            </header>
+
+            <!-- Dashboard Content Panels -->
+            <div class="dashboard-body">
+                
+                <!-- Tab 1: Single Prediction Interface -->
+                <div class="tab-panel active" id="panel-single">
+                    <div class="grid-container">
+                        <!-- Inputs Form -->
+                        <div class="glass-card form-card">
+                            <h3 class="card-title"><i class="fa-solid fa-sliders"></i> Account Risk Config</h3>
+                            <form id="single-predict-form">
+                                <!-- Group 1: Numerical Values -->
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="tenure">Tenure (Months): <span id="tenure-val">12</span></label>
+                                        <input type="range" id="tenure" name="tenure" min="1" max="72" value="12" class="slider">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="MonthlyCharges">Monthly Charges ($): <span id="monthly-val">70.00</span></label>
+                                        <input type="range" id="MonthlyCharges" name="MonthlyCharges" min="18" max="120" step="0.5" value="70" class="slider">
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="TotalCharges">Total Charges ($)</label>
+                                        <input type="number" id="TotalCharges" name="TotalCharges" value="840.00" step="0.01" class="form-input">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="Contract">Contract Type</label>
+                                        <select id="Contract" name="Contract" class="form-select">
+                                            <option value="Month-to-month">Month-to-month</option>
+                                            <option value="One year">One year</option>
+                                            <option value="Two year">Two year</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Group 2: Categories -->
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="InternetService">Internet Service</label>
+                                        <select id="InternetService" name="InternetService" class="form-select">
+                                            <option value="Fiber optic">Fiber optic</option>
+                                            <option value="DSL">DSL</option>
+                                            <option value="No">No Internet Service</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="PaymentMethod">Payment Method</label>
+                                        <select id="PaymentMethod" name="PaymentMethod" class="form-select">
+                                            <option value="Electronic check">Electronic check</option>
+                                            <option value="Mailed check">Mailed check</option>
+                                            <option value="Bank transfer (automatic)">Bank transfer (automatic)</option>
+                                            <option value="Credit card (automatic)">Credit card (automatic)</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-grid-three">
+                                    <div class="form-group">
+                                        <label for="TechSupport">Tech Support</label>
+                                        <select id="TechSupport" name="TechSupport" class="form-select">
+                                            <option value="No">No</option>
+                                            <option value="Yes">Yes</option>
+                                            <option value="No internet service">No Internet</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="OnlineSecurity">Online Security</label>
+                                        <select id="OnlineSecurity" name="OnlineSecurity" class="form-select">
+                                            <option value="No">No</option>
+                                            <option value="Yes">Yes</option>
+                                            <option value="No internet service">No Internet</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="OnlineBackup">Online Backup</label>
+                                        <select id="OnlineBackup" name="OnlineBackup" class="form-select">
+                                            <option value="No">No</option>
+                                            <option value="Yes">Yes</option>
+                                            <option value="No internet service">No Internet</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-grid-three">
+                                    <div class="form-group">
+                                        <label for="DeviceProtection">Device Protection</label>
+                                        <select id="DeviceProtection" name="DeviceProtection" class="form-select">
+                                            <option value="No">No</option>
+                                            <option value="Yes">Yes</option>
+                                            <option value="No internet service">No Internet</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="StreamingTV">Streaming TV</label>
+                                        <select id="StreamingTV" name="StreamingTV" class="form-select">
+                                            <option value="No">No</option>
+                                            <option value="Yes">Yes</option>
+                                            <option value="No internet service">No Internet</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="StreamingMovies">Streaming Movies</label>
+                                        <select id="StreamingMovies" name="StreamingMovies" class="form-select">
+                                            <option value="No">No</option>
+                                            <option value="Yes">Yes</option>
+                                            <option value="No internet service">No Internet</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-row-checkboxes">
+                                    <div class="checkbox-group">
+                                        <label class="toggle-container">
+                                            <input type="checkbox" id="SeniorCitizen" name="SeniorCitizen" value="1">
+                                            <span class="toggle-slider"></span>
+                                            Senior Citizen
+                                        </label>
+                                    </div>
+                                    <div class="checkbox-group">
+                                        <label class="toggle-container">
+                                            <input type="checkbox" id="Partner" name="Partner" value="Yes" checked>
+                                            <span class="toggle-slider"></span>
+                                            Has Partner
+                                        </label>
+                                    </div>
+                                    <div class="checkbox-group">
+                                        <label class="toggle-container">
+                                            <input type="checkbox" id="Dependents" name="Dependents" value="Yes">
+                                            <span class="toggle-slider"></span>
+                                            Has Dependents
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="form-row-checkboxes">
+                                    <div class="checkbox-group">
+                                        <label class="toggle-container">
+                                            <input type="checkbox" id="PhoneService" name="PhoneService" value="Yes" checked>
+                                            <span class="toggle-slider"></span>
+                                            Phone Service
+                                        </label>
+                                    </div>
+                                    <div class="checkbox-group">
+                                        <label class="toggle-container">
+                                            <input type="checkbox" id="MultipleLines" name="MultipleLines" value="Yes">
+                                            <span class="toggle-slider"></span>
+                                            Multiple Lines
+                                        </label>
+                                    </div>
+                                    <div class="checkbox-group">
+                                        <label class="toggle-container">
+                                            <input type="checkbox" id="PaperlessBilling" name="PaperlessBilling" value="Yes" checked>
+                                            <span class="toggle-slider"></span>
+                                            Paperless Billing
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="submit-btn" id="btn-predict-single">
+                                    Calculate Churn Risk <i class="fa-solid fa-arrow-right"></i>
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Outputs Panel -->
+                        <div class="right-column">
+                            <div class="glass-card result-card" id="risk-result-card">
+                                <h3 class="card-title"><i class="fa-solid fa-gauge-high"></i> AI Analysis Profile</h3>
+                                <div class="gauge-container">
+                                    <svg class="progress-ring" width="180" height="180">
+                                        <circle class="progress-ring-circle-bg" stroke="#1d2127" stroke-width="12" fill="transparent" r="70" cx="90" cy="90"/>
+                                        <circle class="progress-ring-circle" id="risk-gauge" stroke="url(#gradient)" stroke-width="12" fill="transparent" r="70" cx="90" cy="90"/>
+                                        <!-- Gradient definition -->
+                                        <defs>
+                                            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                                <stop offset="0%" stop-color="#4e54c8" />
+                                                <stop offset="100%" stop-color="#8f94fb" />
+                                            </linearGradient>
+                                        </defs>
+                                    </svg>
+                                    <div class="gauge-value" id="risk-score">0.0%</div>
+                                </div>
+                                <div class="risk-badge" id="risk-badge">Ready</div>
+                                <div class="reasons-box">
+                                    <h4>Key Risk Drivers:</h4>
+                                    <ul id="risk-reasons-list">
+                                        <li>Submit the account configuration parameters to generate risk indicators.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Batch Prediction Interface -->
+                <div class="tab-panel" id="panel-batch">
+                    <div class="batch-container">
+                        <!-- CSV Upload Card -->
+                        <div class="glass-card upload-card">
+                            <h3 class="card-title"><i class="fa-solid fa-upload"></i> Upload Customer File</h3>
+                            <p class="upload-desc">Upload a CSV file containing customer details to predict churn risks in batch. The columns must match the training set features.</p>
+                            
+                            <form id="batch-upload-form" enctype="multipart/form-data">
+                                <div class="drop-zone" id="csv-drop-zone">
+                                    <i class="fa-solid fa-file-csv upload-icon"></i>
+                                    <p class="drop-text">Drag & drop your CSV file here or <span>browse files</span></p>
+                                    <input type="file" id="batch-file" name="file" accept=".csv" class="file-input-hidden">
+                                </div>
+                                <div id="selected-file-info" class="selected-file-hidden">
+                                    <i class="fa-solid fa-file-excel file-label-icon"></i>
+                                    <span id="selected-filename">filename.csv</span>
+                                    <button type="button" id="remove-file-btn"><i class="fa-solid fa-xmark"></i></button>
+                                </div>
+                                <button type="submit" class="submit-btn" id="btn-batch-process">
+                                    Run Batch Analytics <i class="fa-solid fa-circle-play"></i>
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Batch Results Display -->
+                        <div class="glass-card batch-results-card inactive" id="batch-results-panel">
+                            <h3 class="card-title"><i class="fa-solid fa-chart-pie"></i> Batch Prediction Results</h3>
+                            
+                            <div class="batch-grid">
+                                <!-- Chart -->
+                                <div class="chart-box">
+                                    <canvas id="churnChart"></canvas>
+                                </div>
+
+                                <!-- Stats Dashboard -->
+                                <div class="stats-box">
+                                    <div class="stat-card">
+                                        <div class="stat-value" id="stat-total">0</div>
+                                        <div class="stat-label">Total Accounts Processed</div>
+                                    </div>
+                                    <div class="stat-row">
+                                        <div class="stat-card nested">
+                                            <div class="stat-value danger" id="stat-churned">0</div>
+                                            <div class="stat-label">Predicted to Churn</div>
+                                        </div>
+                                        <div class="stat-card nested">
+                                            <div class="stat-value success" id="stat-retained">0</div>
+                                            <div class="stat-label">Accounts Retained</div>
+                                        </div>
+                                    </div>
+                                    <div class="stat-card churn-rate-card">
+                                        <div class="stat-value" id="stat-rate">0.0%</div>
+                                        <div class="stat-label">Estimated Churn Rate</div>
+                                    </div>
+                                    <a id="download-predictions-link" href="#" class="download-btn">
+                                        <i class="fa-solid fa-circle-arrow-down"></i> Download Predictions CSV
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Processing overlay -->
+                        <div class="loader-overlay hidden" id="processing-loader">
+                            <div class="loader-spinner"></div>
+                            <p>AI Engine Processing Batch Prediction...</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Main JavaScript script -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

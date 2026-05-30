@@ -1,0 +1,14 @@
+# Dataset CSV Files
+train (3).csv
+test (2).csv
+sample_submission (2).csv
+submission.csv
+
+# Uploads Folder
+uploads/
+
+# Jupyter & Python Caches
+.ipynb_checkpoints/
+__pycache__/
+*.pyc
+catboost_info/
